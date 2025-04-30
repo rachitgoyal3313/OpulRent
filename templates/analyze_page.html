@@ -1,0 +1,309 @@
+{% extends 'base.html' %}
+
+{% block title %}Investment Analysis Bot - OpulRent{% endblock %}
+
+{% block extra_css %}
+<style>
+    .content-wrapper {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+    
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 2rem;
+    }
+    
+    .analysis-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+    }
+    
+    .analysis-card {
+        background-color: var(--card-bg);
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+    
+    .card-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .card-subtitle {
+        color: var(--text-secondary);
+        font-size: 0.875rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border-radius: 0.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background-color: var(--section-bg);
+        color: var(--text-light);
+        font-size: 1rem;
+    }
+    
+    .form-control::placeholder {
+        color: rgba(255, 255, 255, 0.4);
+    }
+    
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+    
+    .btn-analyze {
+        background-color: var(--primary-light);
+        color: var(--text-light);
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        width: 100%;
+        font-size: 1rem;
+    }
+    
+    .btn-analyze:hover {
+        background-color: var(--primary-color);
+    }
+    
+    .tab-nav {
+        display: flex;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        margin-bottom: 1.5rem;
+    }
+    
+    .tab-item {
+        padding: 0.75rem 1.5rem;
+        cursor: pointer;
+        color: var(--text-secondary);
+        border-bottom: 2px solid transparent;
+        transition: all 0.3s ease;
+    }
+    
+    .tab-item.active {
+        color: var(--text-light);
+        border-bottom: 2px solid var(--primary-light);
+    }
+    
+    .metrics-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .metric-card {
+        background-color: var(--section-bg);
+        border-radius: 0.5rem;
+        padding: 1.25rem;
+    }
+    
+    .metric-title {
+        color: var(--text-secondary);
+        font-size: 0.875rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .metric-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+    
+    .summary-box {
+        background-color: var(--section-bg);
+        border-radius: 0.5rem;
+        padding: 1.25rem;
+        margin-top: 1rem;
+    }
+    
+    @media (max-width: 768px) {
+        .analysis-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+        
+        .metrics-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+    <h1 class="page-title">Investment Analysis Bot</h1>
+    
+    <div class="analysis-grid">
+        <div class="analysis-card">
+            <h2 class="card-title">Property Details</h2>
+            <p class="card-subtitle">Enter property details to get an AI-powered investment analysis</p>
+            
+            <form id="property-analysis-form">
+                <div class="form-group">
+                    <label for="location" class="form-label">Location *</label>
+                    <input type="text" id="location" class="form-control" placeholder="Enter city, neighborhood or address" required>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="size" class="form-label">Size (sq ft) *</label>
+                        <input type="number" id="size" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="price" class="form-label">Price (USD) *</label>
+                        <input type="number" id="price" class="form-control" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="bedrooms" class="form-label">Bedrooms</label>
+                        <input type="number" id="bedrooms" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="bathrooms" class="form-label">Bathrooms</label>
+                        <input type="number" id="bathrooms" class="form-control">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="property-type" class="form-label">Property Type</label>
+                        <input type="text" id="property-type" class="form-control" placeholder="e.g., Apartment, House">
+                    </div>
+                    <div class="form-group">
+                        <label for="year-built" class="form-label">Year Built</label>
+                        <input type="number" id="year-built" class="form-control">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="additional-info" class="form-label">Additional Information</label>
+                    <textarea id="additional-info" class="form-control" rows="5" placeholder="Any additional details about the property..."></textarea>
+                </div>
+                
+                <button type="submit" class="btn-analyze">Analyze Investment</button>
+            </form>
+        </div>
+        
+        <div class="analysis-card">
+            <h2 class="card-title">Analysis Results</h2>
+            <p class="card-subtitle">AI-powered investment analysis for your property</p>
+            
+            <div class="tab-nav">
+                <div class="tab-item active" data-tab="summary">Summary</div>
+                <div class="tab-item" data-tab="charts">Charts</div>
+                <div class="tab-item" data-tab="comparables">Comparables</div>
+            </div>
+            
+            <div class="tab-content" id="summary-tab">
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <p class="metric-title">Monthly Rent</p>
+                        <p class="metric-value">$224917</p>
+                    </div>
+                    <div class="metric-card">
+                        <p class="metric-title">Annual ROI</p>
+                        <p class="metric-value">8.4%</p>
+                    </div>
+                    <div class="metric-card">
+                        <p class="metric-title">Area Growth</p>
+                        <p class="metric-value">6/10</p>
+                    </div>
+                </div>
+                
+                <h3 class="card-title">Investment Summary</h3>
+                <div class="summary-box">
+                    <p>Based on our AI analysis, this property has an estimated monthly rental income of $224917, providing an annual ROI of 8.4%. The area has a growth score of 6/10, indicating moderate potential for property value appreciation.</p>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="charts-tab" style="display: none;">
+                <p>Charts will be displayed here</p>
+            </div>
+            
+            <div class="tab-content" id="comparables-tab" style="display: none;">
+                <p>Comparable properties will be displayed here</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ block.super }}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Tab functionality
+        const tabItems = document.querySelectorAll('.tab-item');
+        const tabContents = document.querySelectorAll('.tab-content');
+        
+        tabItems.forEach(tab => {
+            tab.addEventListener('click', function() {
+                // Remove active class from all tabs
+                tabItems.forEach(item => item.classList.remove('active'));
+                
+                // Add active class to clicked tab
+                this.classList.add('active');
+                
+                // Hide all tab contents
+                tabContents.forEach(content => content.style.display = 'none');
+                
+                // Show content of active tab
+                const tabName = this.getAttribute('data-tab');
+                document.getElementById(tabName + '-tab').style.display = 'block';
+            });
+        });
+        
+        // Form submission
+        const analysisForm = document.getElementById('property-analysis-form');
+        analysisForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            // Collect form data
+            const formData = {
+                location: document.getElementById('location').value,
+                size: document.getElementById('size').value,
+                price: document.getElementById('price').value,
+                bedrooms: document.getElementById('bedrooms').value,
+                bathrooms: document.getElementById('bathrooms').value,
+                propertyType: document.getElementById('property-type').value,
+                yearBuilt: document.getElementById('year-built').value,
+                additionalInfo: document.getElementById('additional-info').value
+            };
+            
+            // Here you would normally make an API call to process the analysis
+            console.log('Analysis request submitted:', formData);
+            alert('Analysis request submitted successfully. Results will be displayed soon.');
+            
+            // For demo purposes, let's simulate a successful analysis
+            document.querySelector('.tab-item[data-tab="summary"]').click();
+        });
+    });
+</script>
+{% endblock %}

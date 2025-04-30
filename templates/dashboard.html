@@ -1,0 +1,160 @@
+
+{% extends "base.html" %}
+
+{% block title %}Dashboard | OpulRent{% endblock %}
+
+{% block extra_css %}
+
+<style>
+    .dashboard-cards {
+        display: flex;
+        gap: 2rem;
+        flex-wrap: wrap;
+        margin-bottom: 2rem;
+    }
+    
+    .dashboard-card {
+        flex: 1 1 200px;
+        background-color: var(--card-bg);
+        padding: 1.5rem;
+        border-radius: 0.75rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .dashboard-card .label {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .dashboard-card .value {
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+    
+    .badge {
+        display: inline-block;
+        background-color: var(--section-bg);
+        padding: 0.3rem 0.75rem;
+        border-radius: 1rem;
+        font-size: 0.875rem;
+        color: var(--text-light);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .active-tab, .inactive-tab {
+        padding: 0.5rem 1.25rem;
+        font-weight: 600;
+        border-radius: 0.5rem;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .active-tab {
+        background-color: white;
+        color: black;
+    }
+    
+    .inactive-tab {
+        background-color: var(--card-bg);
+        color: var(--text-secondary);
+    }
+    
+    .property-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+    }
+    
+    .property-card {
+        background-color: var(--card-bg);
+        border-radius: 0.75rem;
+        overflow: hidden;
+        position: relative;
+    }
+    
+    .property-image {
+        height: 180px;
+        background-color: #1a1a2e;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: #555;
+    }
+    
+    .property-tag {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background-color: var(--primary-light);
+        color: white;
+        padding: 0.3rem 0.75rem;
+        font-size: 0.75rem;
+        border-radius: 1rem;
+    }
+    
+    .property-info {
+        padding: 1.25rem;
+    }
+    
+    .property-info h2 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 0.3rem;
+    }
+    
+    .property-info p {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }   
+</style>
+{% endblock %}
+
+{% block content %}
+<section style="padding: 2rem;">
+    <h1 style="font-size: 2rem; font-weight: bold; margin-bottom: 2rem;">My Dashboard</h1>
+
+    <!-- Dashboard Stats -->
+    <div class="dashboard-cards">
+        <div class="dashboard-card">
+            <p class="label">KYC Status</p>
+            <span class="badge">Approved</span>
+        </div>
+        <div class="dashboard-card">
+            <p class="label">Properties Owned</p>
+            <p class="value">2</p>
+        </div>
+        <div class="dashboard-card">
+            <p class="label">Rental Income</p>
+            <p class="value">$9800.00</p>
+        </div>
+    </div>
+
+    <!-- Toggle Tabs -->
+    <div style="display: flex; gap: 1rem; margin: 2rem 0;">
+        <button class="active-tab">My Properties</button>
+        <button class="inactive-tab">Rental Agreements</button>
+    </div>
+
+    <!-- Property Cards -->
+    <div class="property-grid">
+        <div class="property-card">
+            <div class="property-image">🖼</div>
+            <span class="property-tag">For Sale</span>
+            <div class="property-info">
+                <h2>Luxury Apartment</h2>
+                <p>📍 Manhattan, New York</p>
+            </div>
+        </div>
+        <div class="property-card">
+            <div class="property-image">🖼</div>
+            <span class="property-tag">For Sale</span>
+            <div class="property-info">
+                <h2>Beachfront Villa</h2>
+                <p>📍 Miami, Florida</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
