@@ -13,9 +13,6 @@ def marketplace(request):
 def mint(request):
     return render(request, 'mint_property.html')
 
-def login(request):
-    return render(request, 'login_page.html')
-
 def analyze(request):
     return render(request, 'analyze_page.html')
 

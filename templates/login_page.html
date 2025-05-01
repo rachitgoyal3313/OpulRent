@@ -196,6 +196,12 @@
     .forgot-password:hover {
         color: var(--text-light);
     }
+
+    .error-message {
+        color: #ff5555;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
 </style>
 {% endblock %}
 
@@ -207,17 +213,23 @@
         <p class="login-subtitle">Sign in to access your property portfolio</p>
     </div>
     
-    <form id="loginForm" method="post" action="">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="error-message {{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <form id="loginForm" method="post" action="{% url 'login' %}">
         {% csrf_token %}
         
         <div class="form-group">
             <label for="email" class="form-label">Email</label>
-            <input type="email" id="email" name="email" class="form-control" required>
+            {{ form.email }}
         </div>
         
         <div class="form-group">
             <label for="password" class="form-label">Password</label>
-            <input type="password" id="password" name="password" class="form-control" required>
+            {{ form.password }}
         </div>
         
         <a href="#" class="forgot-password">Forgot password?</a>
@@ -242,7 +254,7 @@
     </button>
     
     <div class="login-footer">
-        Don't have an account? <a href="3">Sign up</a>
+        Don't have an account? <a href="{% url 'register' %}">Sign up</a>
     </div>
 </div>
 {% endblock %}
@@ -251,29 +263,12 @@
 {{ block.super }}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const loginForm = document.getElementById('loginForm');
         const walletLoginBtn = document.getElementById('walletLoginBtn');
-        
-        loginForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // Normally this would submit the form to the server
-            // For demonstration, we'll just show an alert
-            console.log('Login form submitted');
-            
-            // Simulate successful login and redirect
-            setTimeout(() => {
-                window.location.href = "{% url 'dashboard' %}";
-            }, 1000);
-        });
         
         walletLoginBtn.addEventListener('click', function() {
             console.log('Wallet login clicked');
-            
-            // This would normally initialize wallet connection process
             alert('Wallet connection process would be initiated here.');
-            
-            // Simulate successful wallet connection and redirect
+            // Simulate successful wallet connection
             setTimeout(() => {
                 localStorage.setItem('walletConnected', 'true');
                 window.location.href = "{% url 'dashboard' %}";

@@ -8,6 +8,5 @@ urlpatterns = [
     path("analyze/", views.analyze, name='analyze'),
     path("dashboard/", views.dashboard, name='dashboard'),
     path("mint/", views.mint, name='mint'),
-    path("login/", views.login, name='login'),
     path("propertydetail/", views.mint, name='property_detail'),
 ]

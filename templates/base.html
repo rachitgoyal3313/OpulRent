@@ -98,6 +98,30 @@
             background-color: var(--primary-color);
         }
 
+        /* Messages */
+        .messages {
+            max-width: 1200px;
+            margin: 1rem auto;
+            padding: 0 2rem;
+        }
+
+        .message {
+            padding: 0.75rem 1.5rem;
+            margin-bottom: 0.5rem;
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .message.success {
+            background-color: var(--success-color);
+            color: var(--dark-bg);
+        }
+
+        .message.error {
+            background-color: #ff5555;
+            color: var(--text-light);
+        }
+
         /* Footer Styles */
         footer {
             padding: 3rem 2rem;
@@ -169,8 +193,6 @@
                 grid-template-columns: 1fr;
             }
         }
-
-        
     </style>
     {% block extra_css %}{% endblock %}
     {% block extra_head %}{% endblock %}
@@ -186,12 +208,32 @@
             <a href="{% url 'dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">Dashboard</a>
         </nav>
         <div class="right-menu">
-            <a href="{% url 'login' %}" class="connect-wallet" style="text-decoration: none;">
-                Login
-            </a>
+            {% if user.is_authenticated %}
+                <a href="{% url 'dashboard' %}" class="connect-wallet" style="text-decoration: none;">
+                    {{ user.first_name }}
+                </a>
+                <a href="{% url 'logout' %}" class="connect-wallet" style="text-decoration: none;">
+                    Logout
+                </a>
+            {% else %}
+                <a href="{% url 'login' %}" class="connect-wallet" style="text-decoration: none;">
+                    Login
+                </a>
+                <a href="{% url 'register' %}" class="connect-wallet" style="text-decoration: none;">
+                    Sign Up
+                </a>
+            {% endif %}
             <button class="connect-wallet">Connect Wallet</button>
         </div>
     </header>
+
+    <div class="messages">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="message {{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    </div>
 
     <main>
         {% block content %}{% endblock %}
@@ -264,7 +306,6 @@
             // Theme toggle functionality
             const themeToggle = document.querySelector('.theme-toggle');
             themeToggle.addEventListener('click', function() {
-                // This would normally toggle between dark and light theme
                 console.log('Theme toggle clicked');
             });
             
