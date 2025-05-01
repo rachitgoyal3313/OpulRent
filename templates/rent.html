@@ -213,9 +213,9 @@ button.inactive {
 
     <!-- Toggle Buttons -->
     <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+        <a href="{% url 'marketplace' %}"><button type="button" class="inactive">All</button></a>
         <a href="{% url 'buy_properties' %}"><button type="button" class="inactive">Buy</button></a>
         <a href="{% url 'rent_properties' %}"><button type="button" class="active">Rent</button></a>
-        <a href="{% url 'marketplace' %}"><button type="button" class="inactive">All</button></a>
     </div>
 
     <!-- Property Cards -->
@@ -259,21 +259,7 @@ button.inactive {
                         <span style="color: #555;">🖼</span>
                         {% endif %}
                     </div>
-                    
-                    <!-- Carousel navigation -->
-                    {% if property.image1 %}
-                    <button class="carousel-prev" onclick="prevSlide(event, 'carousel-{{ property.id }}')">❮</button>
-                    <button class="carousel-next" onclick="nextSlide(event, 'carousel-{{ property.id }}')">❯</button>
-                    
-                    <div class="carousel-controls">
-                        {% if property.image1 %}<div class="carousel-dot active" onclick="goToSlide(event, 'carousel-{{ property.id }}', 0)"></div>{% endif %}
-                        {% if property.image2 %}<div class="carousel-dot" onclick="goToSlide(event, 'carousel-{{ property.id }}', 1)"></div>{% endif %}
-                        {% if property.image3 %}<div class="carousel-dot" onclick="goToSlide(event, 'carousel-{{ property.id }}', 2)"></div>{% endif %}
-                        {% if property.image4 %}<div class="carousel-dot" onclick="goToSlide(event, 'carousel-{{ property.id }}', 3)"></div>{% endif %}
-                        {% if property.image5 %}<div class="carousel-dot" onclick="goToSlide(event, 'carousel-{{ property.id }}', 4)"></div>{% endif %}
                     </div>
-                    {% endif %}
-                </div>
                 <span class="property-tag">For Rent</span>
                 <div class="property-info">
                     <h2>{{ property.house_type }}</h2>

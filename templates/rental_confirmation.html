@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}Rental Confirmation{% endblock %}
+
+{% block extra_css %}
+<style>
+:root {
+    --primary-color: #8A2BE2;
+    --primary-light: #9D4EDD;
+    --dark-bg: #050714;
+    --card-bg: #141429;
+    --section-bg: #0A0B1E;
+    --text-light: #FFFFFF;
+    --text-secondary: #AAAACC;
+    --success-color: #4EDD9D;
+}
+
+body {
+    background-color: var(--dark-bg);
+    color: var(--text-light);
+    font-family: 'Inter', sans-serif;
+}
+
+.confirmation-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 3rem 2rem;
+}
+
+.confirmation-card {
+    background-color: var(--card-bg);
+    border-radius: 1rem;
+    padding: 2rem;
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.success-icon {
+    font-size: 4rem;
+    color: var(--success-color);
+    margin-bottom: 1.5rem;
+}
+
+h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.property-details {
+    background-color: var(--section-bg);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    margin: 2rem 0;
+    text-align: left;
+}
+
+.property-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.property-row:last-child {
+    border-bottom: none;
+}
+
+.property-label {
+    color: var(--text-secondary);
+}
+
+.button {
+    display: inline-block;
+    padding: 1rem 2rem;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.3s;
+}
+
+.button:hover {
+    background-color: var(--primary-light);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="confirmation-container">
+    <div class="confirmation-card">
+        <div class="success-icon">✓</div>
+        <h1>Rental Confirmed!</h1>
+        <p>You have successfully rented this property. The smart contract has been executed, and your rental agreement has been registered on the blockchain.</p>
+        
+        <div class="property-details">
+            <div class="property-row">
+                <span class="property-label">Property Type</span>
+                <span>{{ property.house_type }}</span>
+            </div>
+            <div class="property-row">
+                <span class="property-label">Location</span>
+                <span>{{ property.locality }}, {{ property.city }}</span>
+            </div>
+            <div class="property-row">
+                <span class="property-label">Area</span>
+                <span>{{ property.area }} sqft</span>
+            </div>
+            <div class="property-row">
+                <span class="property-label">Monthly Rent</span>
+                <span>{{ property.rent }} ETH</span>
+            </div>
+            <div class="property-row">
+                <span class="property-label">Transaction ID</span>
+                <span>0x{{ property.id }}a7e2b3c4d5e6f8a9b0c1d2e3f4a5b6c7d8e9f0</span>
+            </div>
+            <div class="property-row">
+                <span class="property-label">Rental Agreement</span>
+                <span>Smart Contract #RT{{ property.id }}{{ property.owner.id }}</span>
+            </div>
+        </div>
+        
+        <a href="{% url 'marketplace' %}" class="button">Back to Marketplace</a>
+    </div>
+</div>
+{% endblock %}

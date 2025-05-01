@@ -77,15 +77,18 @@ def property_action(request, property_id, property_type):
         units_to_buy = int(request.POST.get('units', 1))
         if units_to_buy > property_obj.units_available:
             # Handle error, not enough units available
+            messages.error(request, 'Not enough units available for purchase.')
             return redirect('property_detail', property_id=property_id, property_type=property_type)
         # Update units sold
         property_obj.units_sold += units_to_buy
         property_obj.save()
         # Additional logic for blockchain transaction here
         return redirect('purchase_confirmation', property_id=property_id)
-    else:
+    else:  # rent
         property_obj = get_object_or_404(PropertyForRent, id=property_id)
-        # Logic for renting property would go here
+        # Logic for renting property
+        # Here we would typically process rental terms, deposit, etc.
+        # For now, we'll just redirect to the confirmation page
         return redirect('rental_confirmation', property_id=property_id)
 
 @login_required(login_url='/login/')
@@ -98,7 +101,7 @@ def rental_confirmation(request, property_id):
     property_obj = get_object_or_404(PropertyForRent, id=property_id)
     return render(request, 'rental_confirmation.html', {'property': property_obj})
 
-@login_required(login_url='/login/')
+@login_required(login_url='/users/login/')
 def mint(request):
     """Handle property creation with image uploads"""
     if request.method == 'POST':

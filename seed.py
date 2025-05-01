@@ -17,7 +17,27 @@ def run():
     UserProfile.objects.all().delete()
     PropertyForSale.objects.all().delete()
     PropertyForRent.objects.all().delete()
-    print("Existing data cleared.")
+    
+    # Reset the ID sequences
+    from django.db import connection
+    with connection.cursor() as cursor:
+        # Get the database engine being used
+        db_engine = connection.vendor
+        
+        if db_engine == 'postgresql':
+            # PostgreSQL sequence reset
+            cursor.execute("SELECT setval(pg_get_serial_sequence('property_propertyforsale', 'id'), 1, false);")
+            cursor.execute("SELECT setval(pg_get_serial_sequence('property_propertyforrent', 'id'), 1, false);")
+        elif db_engine == 'sqlite':
+            # SQLite sequence reset
+            cursor.execute("DELETE FROM sqlite_sequence WHERE name='property_propertyforsale';")
+            cursor.execute("DELETE FROM sqlite_sequence WHERE name='property_propertyforrent';")
+        elif db_engine == 'mysql':
+            # MySQL sequence reset
+            cursor.execute("ALTER TABLE property_propertyforsale AUTO_INCREMENT = 1;")
+            cursor.execute("ALTER TABLE property_propertyforrent AUTO_INCREMENT = 1;")
+    
+    print("Existing data cleared and ID sequences reset.")
 
     # Create dummy users
     users_data = [
@@ -42,13 +62,14 @@ def run():
         users.append(user)
     print(f"Created {len(users)} users.")
 
-    # Ensure opulent/media/property_images directory exists
-    media_images_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'opulent', 'media', 'property_images')
+    # Ensure media/property_images directory exists
+    # The path should be relative to the project root, not opulent subdirectory
+    media_images_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'media', 'property_images')
     os.makedirs(media_images_dir, exist_ok=True)
     print(f"Media directory ensured: {media_images_dir}")
 
     # Supported image extensions
-    image_extensions = ['.jpg', '.jpeg', '.avif']
+    image_extensions = ['.jpg', '.jpeg', '.avif', '.png']
 
     # Define locations for properties
     locations = [
@@ -106,6 +127,13 @@ def run():
             "image_prefix": f"{idx}image"  # Images: 13image1.jpg to 24image5.jpg
         })
 
+    # Helper function to manually create image file paths in the database
+    def set_image_path(property_obj, image_number, image_name):
+        image_field = getattr(property_obj, f"image{image_number}")
+        # Don't use File object, just set the path directly
+        image_field.name = f"property_images/{image_name}"
+        return True
+
     # Save properties for sale
     print(f"Saving {len(properties_for_sale)} properties for sale...")
     for prop_data in properties_for_sale:
@@ -122,11 +150,11 @@ def run():
             sale_price=prop_data["sale_price"],
             owner=prop_data["owner"]
         )
+        property_sale.save()  # Save first to get an ID
         
         # Set the 5 images using the image prefix
         image_prefix = prop_data["image_prefix"]
         for i in range(1, 6):
-            image_field = getattr(property_sale, f"image{i}")
             image_assigned = False
             
             # Try each extension
@@ -136,8 +164,8 @@ def run():
                 
                 # Check if the image exists in the media directory
                 if os.path.exists(image_path):
-                    with open(image_path, 'rb') as f:
-                        image_field.save(image_name, File(f))
+                    # Set the path directly instead of using File object
+                    set_image_path(property_sale, i, image_name)
                     print(f"Set image{i} for sale property: {prop_data['house_type']} in {prop_data['locality']} using {image_name}")
                     image_assigned = True
                     break
@@ -145,7 +173,7 @@ def run():
             if not image_assigned:
                 print(f"Warning: No image found for sale property {prop_data['house_type']} in {prop_data['locality']} for image{i} with prefix {image_prefix}")
         
-        property_sale.save()
+        property_sale.save()  # Save again with the image paths
     print(f"Saved {PropertyForSale.objects.count()} properties for sale.")
 
     # Save properties for rent
@@ -164,11 +192,11 @@ def run():
             rent=prop_data["rent"],
             owner=prop_data["owner"]
         )
+        property_rent.save()  # Save first to get an ID
         
         # Set the 5 images using the image prefix
         image_prefix = prop_data["image_prefix"]
         for i in range(1, 6):
-            image_field = getattr(property_rent, f"image{i}")
             image_assigned = False
             
             # Try each extension
@@ -178,8 +206,8 @@ def run():
                 
                 # Check if the image exists in the media directory
                 if os.path.exists(image_path):
-                    with open(image_path, 'rb') as f:
-                        image_field.save(image_name, File(f))
+                    # Set the path directly instead of using File object
+                    set_image_path(property_rent, i, image_name)
                     print(f"Set image{i} for rent property: {prop_data['house_type']} in {prop_data['locality']} using {image_name}")
                     image_assigned = True
                     break
@@ -187,7 +215,7 @@ def run():
             if not image_assigned:
                 print(f"Warning: No image found for rent property {prop_data['house_type']} in {prop_data['locality']} for image{i} with prefix {image_prefix}")
         
-        property_rent.save()
+        property_rent.save()  # Save again with the image paths
     print(f"Saved {PropertyForRent.objects.count()} properties for rent.")
 
     print("Database seeded successfully!")
