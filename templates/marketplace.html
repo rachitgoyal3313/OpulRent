@@ -66,6 +66,12 @@ button.inactive {
     border-radius: 0.75rem;
     overflow: hidden;
     position: relative;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.property-card:hover {
+    transform: translateY(-5px);
 }
 
 .property-image {
@@ -74,12 +80,64 @@ button.inactive {
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
+    overflow: hidden;
 }
 
 .property-image img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+}
+
+/* Carousel controls */
+.carousel-controls {
+    position: absolute;
+    bottom: 10px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    z-index: 2;
+}
+
+.carousel-dot {
+    width: 8px;
+    height: 8px;
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.carousel-dot.active {
+    background-color: white;
+}
+
+.carousel-prev, .carousel-next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.carousel-prev {
+    left: 10px;
+}
+
+.carousel-next {
+    right: 10px;
 }
 
 .property-tag {
@@ -91,6 +149,7 @@ button.inactive {
     padding: 0.3rem 0.75rem;
     font-size: 0.75rem;
     border-radius: 1rem;
+    z-index: 1;
 }
 
 .property-info {
@@ -113,6 +172,27 @@ button.inactive {
     font-size: 0.85rem;
     color: var(--text-secondary);
 }
+
+/* Image carousel styles */
+.image-carousel {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.carousel-slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+.carousel-slide.active {
+    opacity: 1;
+}
 </style>
 {% endblock %}
 
@@ -121,13 +201,15 @@ button.inactive {
     <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 2rem;">Property Marketplace</h1>
 
     <!-- Search Bar -->
-    <div style="margin-bottom: 2rem;">
+    <form method="GET" action="{% url 'marketplace' %}" style="margin-bottom: 2rem;">
         <input 
             type="text" 
+            name="search"
             placeholder="Search properties by name or location..." 
+            value="{{ request.GET.search }}"
             style="width: 100%; padding: 1rem; border-radius: 0.5rem; background-color: var(--section-bg); color: var(--text-light); border: 1px solid rgba(255, 255, 255, 0.1);"
         />
-    </div>
+    </form>
 
     <!-- Toggle Buttons -->
     <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
@@ -139,37 +221,146 @@ button.inactive {
     <!-- Property Cards -->
     <div class="property-grid">
         {% for property in properties %}
-        <div class="property-card">
-            <div class="property-image">
-                {% if property.images %}
-                <img src="{{ property.images.url }}" alt="{{ property.house_type }}">
-                {% else %}
-                <span style="color: #555;">🖼</span>
-                {% endif %}
-            </div>
-            <span class="property-tag">
-                {% if property.sale_price %}For Sale{% else %}For Rent{% endif %}
-            </span>
-            <div class="property-info">
-                <h2>{{ property.house_type }}</h2>
-                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.75rem;">📍 {{ property.locality }}, {{ property.city }}</p>
-                <p style="font-weight: bold; font-size: 1rem; margin-bottom: 1rem;">
-                    {% if property.sale_price %}
-                        {{ property.sale_price }} ETH
-                    {% else %}
-                        {{ property.rent }} ETH/month
+        <a href="{% if property.sale_price %}{% url 'property_detail' property.id 'sale' %}{% else %}{% url 'property_detail' property.id 'rent' %}{% endif %}" style="text-decoration: none; color: inherit;">
+            <div class="property-card">
+                <div class="property-image">
+                    <div class="image-carousel" id="carousel-{{ property.id }}">
+                        {% if property.image1 %}
+                        <div class="carousel-slide active">
+                            <img src="{{ property.image1.url }}" alt="{{ property.house_type }} - Image 1">
+                        </div>
+                        {% endif %}
+                        
+                        {% if property.image2 %}
+                        <div class="carousel-slide">
+                            <img src="{{ property.image2.url }}" alt="{{ property.house_type }} - Image 2">
+                        </div>
+                        {% endif %}
+                        
+                        {% if property.image3 %}
+                        <div class="carousel-slide">
+                            <img src="{{ property.image3.url }}" alt="{{ property.house_type }} - Image 3">
+                        </div>
+                        {% endif %}
+                        
+                        {% if property.image4 %}
+                        <div class="carousel-slide">
+                            <img src="{{ property.image4.url }}" alt="{{ property.house_type }} - Image 4">
+                        </div>
+                        {% endif %}
+                        
+                        {% if property.image5 %}
+                        <div class="carousel-slide">
+                            <img src="{{ property.image5.url }}" alt="{{ property.house_type }} - Image 5">
+                        </div>
+                        {% endif %}
+                        
+                        {% if not property.image1 %}
+                        <span style="color: #555;">🖼</span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Carousel navigation -->
+                    {% if property.image1 %}
+                    <button class="carousel-prev" onclick="prevSlide(event, 'carousel-{{ property.id }}')">❮</button>
+                    <button class="carousel-next" onclick="nextSlide(event, 'carousel-{{ property.id }}')">❯</button>
+                    
+                    <div class="carousel-controls">
+                        {% if property.image1 %}<div class="carousel-dot active" onclick="goToSlide(event, 'carousel-{{ property.id }}', 0)"></div>{% endif %}
+                        {% if property.image2 %}<div class="carousel-dot" onclick="goToSlide(event, 'carousel-{{ property.id }}', 1)"></div>{% endif %}
+                        {% if property.image3 %}<div class="carousel-dot" onclick="goToSlide(event, 'carousel-{{ property.id }}', 2)"></div>{% endif %}
+                        {% if property.image4 %}<div class="carousel-dot" onclick="goToSlide(event, 'carousel-{{ property.id }}', 3)"></div>{% endif %}
+                        {% if property.image5 %}<div class="carousel-dot" onclick="goToSlide(event, 'carousel-{{ property.id }}', 4)"></div>{% endif %}
+                    </div>
                     {% endif %}
-                </p>
-                <div class="property-meta">
-                    <span>🛏 {{ property.beds }} Beds</span>
-                    <span>🛁 {{ property.bathrooms }} Baths</span>
-                    <span>📐 {{ property.area }} sqft</span>
+                </div>
+                <span class="property-tag">
+                    {% if property.sale_price %}For Sale{% else %}For Rent{% endif %}
+                </span>
+                <div class="property-info">
+                    <h2>{{ property.house_type }}</h2>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.75rem;">📍 {{ property.locality }}, {{ property.city }}</p>
+                    <p style="font-weight: bold; font-size: 1rem; margin-bottom: 1rem;">
+                        {% if property.sale_price %}
+                            {{ property.sale_price }} ETH
+                        {% else %}
+                            {{ property.rent }} ETH/month
+                        {% endif %}
+                    </p>
+                    <div class="property-meta">
+                        <span>🛏 {{ property.beds }} Beds</span>
+                        <span>🛁 {{ property.bathrooms }} Baths</span>
+                        <span>📐 {{ property.area }} sqft</span>
+                    </div>
                 </div>
             </div>
-        </div>
+        </a>
         {% empty %}
         <p>No properties available.</p>
         {% endfor %}
     </div>
 </section>
+
+<!-- JavaScript for carousel functionality -->
+<script>
+    // Prevent link navigation when clicking carousel controls
+    document.querySelectorAll('.carousel-prev, .carousel-next, .carousel-dot').forEach(control => {
+        control.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        });
+    });
+    
+    function nextSlide(event, carouselId) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        const carousel = document.getElementById(carouselId);
+        const slides = carousel.querySelectorAll('.carousel-slide');
+        const dots = carousel.parentElement.querySelectorAll('.carousel-dot');
+        
+        let activeIndex = Array.from(slides).findIndex(slide => slide.classList.contains('active'));
+        slides[activeIndex].classList.remove('active');
+        dots[activeIndex].classList.remove('active');
+        
+        activeIndex = (activeIndex + 1) % slides.length;
+        slides[activeIndex].classList.add('active');
+        dots[activeIndex].classList.add('active');
+    }
+    
+    function prevSlide(event, carouselId) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        const carousel = document.getElementById(carouselId);
+        const slides = carousel.querySelectorAll('.carousel-slide');
+        const dots = carousel.parentElement.querySelectorAll('.carousel-dot');
+        
+        let activeIndex = Array.from(slides).findIndex(slide => slide.classList.contains('active'));
+        slides[activeIndex].classList.remove('active');
+        dots[activeIndex].classList.remove('active');
+        
+        activeIndex = (activeIndex - 1 + slides.length) % slides.length;
+        slides[activeIndex].classList.add('active');
+        dots[activeIndex].classList.add('active');
+    }
+    
+    function goToSlide(event, carouselId, index) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        const carousel = document.getElementById(carouselId);
+        const slides = carousel.querySelectorAll('.carousel-slide');
+        const dots = carousel.parentElement.querySelectorAll('.carousel-dot');
+        
+        // Remove active class from all slides and dots
+        slides.forEach(slide => slide.classList.remove('active'));
+        dots.forEach(dot => dot.classList.remove('active'));
+        
+        // Add active class to selected slide and dot
+        slides[index].classList.add('active');
+        dots[index].classList.add('active');
+    }
+</script>
 {% endblock %}
+

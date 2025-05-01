@@ -12,7 +12,13 @@ class Property(models.Model):
     furnishing = models.CharField(max_length=50)
     area_rate = models.FloatField()
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
-    images = models.ImageField(upload_to='property_images/', blank=True, null=True)
+    
+    # Multiple image fields instead of a single field
+    image1 = models.ImageField(upload_to='property_images/', blank=True, null=True)
+    image2 = models.ImageField(upload_to='property_images/', blank=True, null=True)
+    image3 = models.ImageField(upload_to='property_images/', blank=True, null=True)
+    image4 = models.ImageField(upload_to='property_images/', blank=True, null=True)
+    image5 = models.ImageField(upload_to='property_images/', blank=True, null=True)
 
     class Meta:
         abstract = True

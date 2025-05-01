@@ -65,6 +65,12 @@ button.inactive {
     border-radius: 0.75rem;
     overflow: hidden;
     position: relative;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.property-card:hover {
+    transform: translateY(-5px);
 }
 
 .property-image {
@@ -140,26 +146,28 @@ button.inactive {
     <!-- Property Cards -->
     <div class="property-grid">
         {% for property in properties %}
-        <div class="property-card">
-            <div class="property-image">
-                {% if property.images %}
-                <img src="{{ property.images.url }}" alt="{{ property.house_type }}">
-                {% else %}
-                <span style="color: #555;">🖼</span>
-                {% endif %}
-            </div>
-            <span class="property-tag">For Sale</span>
-            <div class="property-info">
-                <h2>{{ property.house_type }}</h2>
-                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.75rem;">📍 {{ property.locality }}, {{ property.city }}</p>
-                <p style="font-weight: bold; font-size: 1rem; margin-bottom: 1rem;">{{ property.sale_price }} ETH</p>
-                <div class="property-meta">
-                    <span>🛏 {{ property.beds }} Beds</span>
-                    <span>🛁 {{ property.bathrooms }} Baths</span>
-                    <span>📐 {{ property.area }} sqft</span>
+        <a href="{% url 'property_detail' property.id 'sale' %}" style="text-decoration: none; color: inherit;">
+            <div class="property-card">
+                <div class="property-image">
+                    {% if property.images %}
+                    <img src="{{ property.images.url }}" alt="{{ property.house_type }}">
+                    {% else %}
+                    <span style="color: #555;">🖼</span>
+                    {% endif %}
+                </div>
+                <span class="property-tag">For Sale</span>
+                <div class="property-info">
+                    <h2>{{ property.house_type }}</h2>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.75rem;">📍 {{ property.locality }}, {{ property.city }}</p>
+                    <p style="font-weight: bold; font-size: 1rem; margin-bottom: 1rem;">{{ property.sale_price }} ETH</p>
+                    <div class="property-meta">
+                        <span>🛏 {{ property.beds }} Beds</span>
+                        <span>🛁 {{ property.bathrooms }} Baths</span>
+                        <span>📐 {{ property.area }} sqft</span>
+                    </div>
                 </div>
             </div>
-        </div>
+        </a>
         {% empty %}
         <p>No properties available for sale.</p>
         {% endfor %}

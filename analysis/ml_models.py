@@ -1,139 +1,130 @@
-import numpy as np
+import os
 import pandas as pd
-from sklearn.linear_model import LinearRegression
-from sklearn. model_selection import train_test_split
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 import joblib
-import os
 
-# Paths
-MODEL_PATH = "property_price_model_india.joblib"
+# === Constants ===
+MODEL_DIR = "ml_models"
+RENT_MODEL_FILE = os.path.join(MODEL_DIR, "rent_model.pkl")
+GROWTH_MODEL_FILE = os.path.join(MODEL_DIR, "growth_model.pkl")
 
-# Sample training data generation (for MVP)
-def generate_sample_data():
-    np.random.seed(42)
-    data = {
-        'area_sqft': np.random.randint(500, 2500, 100),
-        'bedrooms': np.random.randint(1, 5, 100),
-        'bathrooms': np.random.randint(1, 4, 100),
-        'location': np.random.choice(['Mumbai', 'Delhi', 'Bangalore', 'Hyderabad', 'Pune'], 100),
-        'property_type': np.random.choice(['apartment', 'house', 'commercial'], 100)
-    }
+# === Ensure model directory exists ===
+os.makedirs(MODEL_DIR, exist_ok=True)
 
-    df = pd.DataFrame(data)
+# === Load and preprocess dataset ===
+def load_and_preprocess_data(filepath):
+    df = pd.read_excel(filepath)
 
-    df['price'] = (
-        df['area_sqft'] * 5000 +
-        df['bedrooms'] * 200000 +
-        df['bathrooms'] * 150000 +
-        df['location'].map({
-            'Mumbai': 1000000,
-            'Delhi': 800000,
-            'Bangalore': 900000,
-            'Hyderabad': 700000,
-            'Pune': 850000
-        }) +
-        df['property_type'].map({
-            'apartment': 100000,
-            'house': 200000,
-            'commercial': 300000
-        }) +
-        np.random.randint(-100000, 100000, 100)
-    )
+    # Compute Growth Score (/10 scale)
+    min_rate = df["area_rate"].min()
+    max_rate = df["area_rate"].max()
+    df["growth_score"] = 10 * (df["area_rate"] - min_rate) / (max_rate - min_rate)
+    df["growth_score"] = df["growth_score"].clip(0, 10)
 
-    return df
+    # Features and targets
+    X = df.drop(columns=["rent", "growth_score"])
+    y_rent = df["rent"]
+    y_growth = df["growth_score"]
 
-# Training and saving the model
-def train_and_save_model():
-    df = generate_sample_data()
-    X = df[['area_sqft', 'bedrooms', 'bathrooms', 'location', 'property_type']]
-    y = df['price']
+    return X, y_rent, y_growth
 
-    categorical_features = ['location', 'property_type']
+# === Preprocessing Pipeline ===
+categorical_features = ["type", "locality", "city", "furnishing"]
+numerical_features = ["bhk", "area", "beds", "bathrooms", "balconies", "area_rate"]
 
-    preprocessor = ColumnTransformer(transformers=[
+preprocessor = ColumnTransformer(
+    transformers=[
         ('cat', OneHotEncoder(handle_unknown='ignore'), categorical_features)
-    ], remainder='passthrough')
+    ],
+    remainder='passthrough'
+)
 
-    model = Pipeline(steps=[
-        ('preprocessor', preprocessor),
-        ('regressor', LinearRegression())
-    ])
+# === Train and Save Models ===
+def train_and_save_models(filepath):
+    X, y_rent, y_growth = load_and_preprocess_data(filepath)
+    X_train, X_test, y_rent_train, y_rent_test = train_test_split(X, y_rent, test_size=0.2, random_state=42)
+    _, _, y_growth_train, y_growth_test = train_test_split(X, y_growth, test_size=0.2, random_state=42)
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-    model.fit(X_train, y_train)
+    def train_model(X_train, y_train):
+        pipeline = Pipeline(steps=[
+            ('preprocessor', preprocessor),
+            ('regressor', RandomForestRegressor(n_estimators=100, random_state=42, n_jobs=-1))
+        ])
+        pipeline.fit(X_train, y_train)
+        return pipeline
 
-    joblib.dump(model, MODEL_PATH)
+    rent_model = train_model(X_train, y_rent_train)
+    growth_model = train_model(X_train, y_growth_train)
 
-# Load model from file or train if not exists
-def load_model():
-    if not os.path.exists(MODEL_PATH):
-        train_and_save_model()
-    return joblib.load(MODEL_PATH)
+    joblib.dump(rent_model, RENT_MODEL_FILE)
+    joblib.dump(growth_model, GROWTH_MODEL_FILE)
 
-# Prediction logic
-def predict_property_metrics(area_sqft, bedrooms, bathrooms, location, property_type):
-    model = load_model()
+    print("✅ Models trained and saved.")
 
-    input_df = pd.DataFrame([{
-        'area_sqft': area_sqft,
-        'bedrooms': bedrooms,
-        'bathrooms': bathrooms,
-        'location': location,
-        'property_type': property_type
+# === ROI Calculation ===
+def calculate_roi(area, area_rate, predicted_rent):
+    investment = area * area_rate
+    annual_rent = predicted_rent
+    roi = ((annual_rent / 12) / investment) * 100
+    return roi
+
+# === Prediction Function ===
+def predict_property(type_, locality, city, furnishing, bhk, area, beds, bathrooms, balconies, area_rate):
+    # Load models
+    if not os.path.exists(RENT_MODEL_FILE) or not os.path.exists(GROWTH_MODEL_FILE):
+        raise FileNotFoundError("Models not found. Train the models first using train_and_save_models().")
+
+    rent_model = joblib.load(RENT_MODEL_FILE)
+    growth_model = joblib.load(GROWTH_MODEL_FILE)
+
+    input_data = pd.DataFrame([{
+        "type": type_,
+        "locality": locality,
+        "city": city,
+        "furnishing": furnishing,
+        "bhk": bhk,
+        "area": area,
+        "beds": beds,
+        "bathrooms": bathrooms,
+        "balconies": balconies,
+        "area_rate": area_rate
     }])
 
-    predicted_price = model.predict(input_df)[0]
-
-    # Growth score and rent/ROI calculations
-    location_growth_map = {
-        'Mumbai': 8.5,
-        'Delhi': 7.5,
-        'Bangalore': 9.0,
-        'Hyderabad': 8.2,
-        'Pune': 8.0
-    }
-
-    location_rent_factor = {
-        'Mumbai': 0.008,
-        'Delhi': 0.0075,
-        'Bangalore': 0.0085,
-        'Hyderabad': 0.007,
-        'Pune': 0.0078
-    }
-
-    property_expense_map = {
-        'apartment': 0.35,
-        'house': 0.4,
-        'commercial': 0.3
-    }
-
-    rental_factor = location_rent_factor.get(location, 0.0075)
-    expense_ratio = property_expense_map.get(property_type.lower(), 0.35)
-    growth = location_growth_map.get(location, 7.0)
-
-    monthly_rent = predicted_price * rental_factor
-    annual_rent = monthly_rent * 12
-    annual_expenses = annual_rent * expense_ratio
-    net_income = annual_rent - annual_expenses
-    roi = (net_income / predicted_price) * 100
+    predicted_rent = rent_model.predict(input_data)[0]
+    predicted_growth = growth_model.predict(input_data)[0]
+    predicted_roi = calculate_roi(area, area_rate, predicted_rent)
 
     return {
-        "predicted_price_inr": round(predicted_price),
-        "monthly_rent_inr": round(monthly_rent),
-        "roi_percent": round(roi, 2),
-        "growth_score_out_of_10": growth
+        "predicted_rent": round(predicted_rent / 12, 2),
+        "predicted_roi": round(predicted_roi, 2),
+        "predicted_growth": round(predicted_growth)
     }
 
-# Test run
-if __name__ == "__main__":
-    result = predict_property_metrics(
-        area_sqft=1500,
-        bedrooms=3,
-        bathrooms=2,
-        location="Bangalore",
-        property_type="apartment"
+# === Optional: Example Run ===
+if _name_ == "_main_":
+    dataset_path = "cities_magicbricks_rental_prices_updated.xlsx"
+    train_and_save_models(dataset_path)
+
+    result = predict_property(
+        type_="Flat",
+        locality="Goregaon",
+        city="Mumbai",
+        furnishing="furnished",
+        bhk=2,
+        area=1000,
+        beds=2,
+        bathrooms=1,
+        balconies=1,
+        area_rate=3000
     )
-    print(result)
+
+    print("\n🔍 Prediction for Input Property:")
+    print(f"Estimated Rent: ₹{result['predicted_rent']:,.2f}/month")
+    print(f"Estimated ROI: {result['predicted_roi']}% annually")
+    print(f"Growth Potential: {result['predicted_growth']}/10")
