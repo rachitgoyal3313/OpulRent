@@ -1,11 +1,9 @@
-
 {% extends "base.html" %}
 
-{% block title %}Marketplace{% endblock %}
+{% block title %}Marketplace | OpulRent{% endblock %}
 
 {% block extra_css %}
 <style>
-    
 :root {
     --primary-color: #8A2BE2;
     --primary-light: #9D4EDD;
@@ -47,12 +45,12 @@ button {
     cursor: pointer;
 }
 
-button:first-of-type {
+button.active {
     background-color: white;
     color: black;
 }
 
-button:last-of-type {
+button.inactive {
     background-color: var(--card-bg);
     color: var(--text-secondary);
 }
@@ -76,6 +74,12 @@ button:last-of-type {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.property-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .property-tag {
@@ -109,7 +113,6 @@ button:last-of-type {
     font-size: 0.85rem;
     color: var(--text-secondary);
 }
-
 </style>
 {% endblock %}
 
@@ -128,65 +131,45 @@ button:last-of-type {
 
     <!-- Toggle Buttons -->
     <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
-        <button style="padding: 0.6rem 1.5rem; font-weight: 600; background-color: white; color: black; border: none; border-radius: 0.5rem;">Buy</button>
-        <button style="padding: 0.6rem 1.5rem; font-weight: 600; background-color: var(--card-bg); color: var(--text-secondary); border: none; border-radius: 0.5rem;">Rent</button>
+        <button onclick="window.location.href='{% url 'buy_properties' %}'" class="inactive">Buy</button>
+        <button onclick="window.location.href='{% url 'rent_properties' %}'" class="inactive">Rent</button>
+        <button onclick="window.location.href='{% url 'marketplace' %}'" class="active">All</button>
     </div>
 
     <!-- Property Cards -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
-        <!-- Property Card 1 -->
-        <div style="background-color: var(--card-bg); border-radius: 0.75rem; overflow: hidden; position: relative;">
-            <div style="height: 180px; background-color: #1a1a2e; display: flex; align-items: center; justify-content: center;">
+    <div class="property-grid">
+        {% for property in properties %}
+        <div class="property-card">
+            <div class="property-image">
+                {% if property.images %}
+                <img src="{{ property.images.url }}" alt="{{ property.house_type }}">
+                {% else %}
                 <span style="color: #555;">🖼</span>
+                {% endif %}
             </div>
-            <span style="position: absolute; top: 1rem; right: 1rem; background-color: var(--primary-light); color: white; padding: 0.3rem 0.75rem; font-size: 0.75rem; border-radius: 1rem;">For Sale</span>
-            <div style="padding: 1.25rem;">
-                <h2 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 0.3rem;">Luxury Apartment</h2>
-                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.75rem;">📍 Manhattan, New York</p>
-                <p style="font-weight: bold; font-size: 1rem; margin-bottom: 1rem;">2.5 ETH</p>
-                <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-secondary);">
-                    <span>🛏 2 Beds</span>
-                    <span>🛁 2 Baths</span>
-                    <span>📐 1200 sqft</span>
+            <span class="property-tag">
+                {% if property.sale_price %}For Sale{% else %}For Rent{% endif %}
+            </span>
+            <div class="property-info">
+                <h2>{{ property.house_type }}</h2>
+                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.75rem;">📍 {{ property.locality }}, {{ property.city }}</p>
+                <p style="font-weight: bold; font-size: 1rem; margin-bottom: 1rem;">
+                    {% if property.sale_price %}
+                        {{ property.sale_price }} ETH
+                    {% else %}
+                        {{ property.rent }} ETH/month
+                    {% endif %}
+                </p>
+                <div class="property-meta">
+                    <span>🛏 {{ property.beds }} Beds</span>
+                    <span>🛁 {{ property.bathrooms }} Baths</span>
+                    <span>📐 {{ property.area }} sqft</span>
                 </div>
             </div>
         </div>
-
-        <!-- Property Card 2 -->
-        <div style="background-color: var(--card-bg); border-radius: 0.75rem; overflow: hidden; position: relative;">
-            <div style="height: 180px; background-color: #1a1a2e; display: flex; align-items: center; justify-content: center;">
-                <span style="color: #555;">🖼</span>
-            </div>
-            <span style="position: absolute; top: 1rem; right: 1rem; background-color: var(--primary-light); color: white; padding: 0.3rem 0.75rem; font-size: 0.75rem; border-radius: 1rem;">For Sale</span>
-            <div style="padding: 1.25rem;">
-                <h2 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 0.3rem;">Beachfront Villa</h2>
-                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.75rem;">📍 Miami, Florida</p>
-                <p style="font-weight: bold; font-size: 1rem; margin-bottom: 1rem;">5.8 ETH</p>
-                <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-secondary);">
-                    <span>🛏 4 Beds</span>
-                    <span>🛁 3.5 Baths</span>
-                    <span>📐 3200 sqft</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Property Card 3 -->
-        <div style="background-color: var(--card-bg); border-radius: 0.75rem; overflow: hidden; position: relative;">
-            <div style="height: 180px; background-color: #1a1a2e; display: flex; align-items: center; justify-content: center;">
-                <span style="color: #555;">🖼</span>
-            </div>
-            <span style="position: absolute; top: 1rem; right: 1rem; background-color: var(--primary-light); color: white; padding: 0.3rem 0.75rem; font-size: 0.75rem; border-radius: 1rem;">For Sale</span>
-            <div style="padding: 1.25rem;">
-                <h2 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 0.3rem;">Suburban Home</h2>
-                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.75rem;">📍 Austin, Texas</p>
-                <p style="font-weight: bold; font-size: 1rem; margin-bottom: 1rem;">1.5 ETH</p>
-                <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-secondary);">
-                    <span>🛏 4 Beds</span>
-                    <span>🛁 2.5 Baths</span>
-                    <span>📐 2400 sqft</span>
-                </div>
-            </div>
-        </div>
+        {% empty %}
+        <p>No properties available.</p>
+        {% endfor %}
     </div>
 </section>
 {% endblock %}
