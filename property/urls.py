@@ -3,6 +3,7 @@ from . import views
 
 urlpatterns = [
     path('marketplace/', views.marketplace, name='marketplace'),
+    path('mint/', views.mint, name='mint'),
     path('buy/', views.buy_properties, name='buy_properties'),
     path('rent/', views.rent_properties, name='rent_properties'),
     path('property/<int:property_id>/<str:property_type>/', views.property_detail, name='property_detail'),

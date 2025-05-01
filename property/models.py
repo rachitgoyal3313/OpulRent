@@ -25,9 +25,21 @@ class Property(models.Model):
 
 class PropertyForSale(Property):
     sale_price = models.FloatField()  # Price in ETH for buying
+    total_units = models.IntegerField(default=100)
+    units_sold = models.IntegerField(default=0)
+
+    @property
+    def units_available(self):
+        return self.total_units - self.units_sold
+
+    @property
+    def unit_price(self):
+        return self.sale_price / self.total_units if self.total_units else 0
 
     def __str__(self):
         return f"{self.house_type} in {self.locality}, {self.city} (For Sale)"
+
+
 
 class PropertyForRent(Property):
     rent = models.FloatField()  # Monthly rent in ETH

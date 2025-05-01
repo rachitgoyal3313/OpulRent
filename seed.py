@@ -1,9 +1,6 @@
 import os
 import django
 from django.core.files import File
-import urllib.request
-import urllib.error
-from http.client import HTTPResponse
 
 # Set up Django environment
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'OpulRent.settings')
@@ -15,10 +12,12 @@ from property.models import PropertyForSale, PropertyForRent
 
 def run():
     # Clear existing data
+    print("Clearing existing data...")
     User.objects.all().delete()
     UserProfile.objects.all().delete()
     PropertyForSale.objects.all().delete()
     PropertyForRent.objects.all().delete()
+    print("Existing data cleared.")
 
     # Create dummy users
     users_data = [
@@ -41,80 +40,74 @@ def run():
             wallet_address=user_data["wallet_address"]
         )
         users.append(user)
+    print(f"Created {len(users)} users.")
 
-    # Ensure media/property_images directory exists
-    media_images_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'media', 'property_images')
+    # Ensure opulent/media/property_images directory exists
+    media_images_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'opulent', 'media', 'property_images')
     os.makedirs(media_images_dir, exist_ok=True)
+    print(f"Media directory ensured: {media_images_dir}")
 
-    # Properties for Sale with local images
-    properties_for_sale = [
-        {
-            "house_type": "3 BHK Flat",
-            "locality": "Bandra West",
-            "city": "Mumbai",
-            "area": 1500.0,
-            "beds": 3,
-            "bathrooms": 3.0,
-            "balconies": 2,
-            "furnishing": "Furnished",
-            "area_rate": 250.0,
-            "sale_price": 375000.0,
-            "owner": users[0],
-            "image_prefix": "1image"  # Will be used to generate image1, image2, etc.
-        },
-        {
-            "house_type": "2 BHK Flat",
-            "locality": "Koramangala",
-            "city": "Bangalore",
-            "area": 1200.0,
-            "beds": 2,
-            "bathrooms": 2.0,
-            "balconies": 1,
-            "furnishing": "Semi-Furnished",
-            "area_rate": 80.0,
-            "sale_price": 96000.0,
-            "owner": users[1],
-            "image_prefix": "2image"
-        },
-        # Add more properties here...
-        # Truncated for brevity
+    # Supported image extensions
+    image_extensions = ['.jpg', '.jpeg', '.avif']
+
+    # Define locations for properties
+    locations = [
+        ("Bandra West", "Mumbai"),
+        ("Koramangala", "Bangalore"),
+        ("Goregaon East", "Mumbai"),
+        ("Powai", "Mumbai"),
+        ("Jayanagar", "Bangalore"),
+        ("Andheri West", "Mumbai"),
+        ("Indiranagar", "Bangalore"),
+        ("Malad West", "Mumbai"),
+        ("Whitefield", "Bangalore"),
+        ("Versova", "Mumbai"),
+        ("Marathahalli", "Bangalore"),
+        ("Juhu", "Mumbai"),
     ]
 
-    # Properties for Rent with local images
-    properties_for_rent = [
-        {
-            "house_type": "2 BHK Flat",
-            "locality": "Goregaon East",
-            "city": "Mumbai",
-            "area": 897.0,
-            "beds": 2,
-            "bathrooms": 2.0,
-            "balconies": 0,
-            "furnishing": "Semi-Furnished",
-            "area_rate": 134.0,
-            "rent": 120000.0,
-            "owner": users[0],
-            "image_prefix": "6image"
-        },
-        {
-            "house_type": "1 BHK Flat",
-            "locality": "Powai",
-            "city": "Mumbai",
-            "area": 490.0,
-            "beds": 1,
-            "bathrooms": 1.0,
-            "balconies": 0,
-            "furnishing": "Semi-Furnished",
-            "area_rate": 82.0,
-            "rent": 40000.0,
-            "owner": users[1],
-            "image_prefix": "7image"
-        },
-        # Add more properties here...
-        # Truncated for brevity
-    ]
+    # Properties for Sale (12 properties with prefixes 1image to 12image)
+    properties_for_sale = []
+    for i in range(12):
+        idx = i + 1
+        loc_idx = i % len(locations)
+        properties_for_sale.append({
+            "house_type": f"{2 + (i % 3)} BHK Flat",
+            "locality": locations[loc_idx][0],
+            "city": locations[loc_idx][1],
+            "area": 800.0 + (i * 100.0),
+            "beds": 2 + (i % 3),
+            "bathrooms": 2.0 + (i % 2),
+            "balconies": i % 3,
+            "furnishing": ["Furnished", "Semi-Furnished", "Unfurnished"][i % 3],
+            "area_rate": 100.0 + (i * 10.0),
+            "sale_price": 50000.0 + (i * 25000.0),
+            "owner": users[i % len(users)],
+            "image_prefix": f"{idx}image"  # Images: 1image1.jpg to 12image5.jpg
+        })
+
+    # Properties for Rent (12 properties with prefixes 13image to 24image)
+    properties_for_rent = []
+    for i in range(12):
+        idx = i + 13
+        loc_idx = i % len(locations)
+        properties_for_rent.append({
+            "house_type": f"{1 + (i % 3)} BHK Flat",
+            "locality": locations[loc_idx][0],
+            "city": locations[loc_idx][1],
+            "area": 500.0 + (i * 50.0),
+            "beds": 1 + (i % 3),
+            "bathrooms": 1.0 + (i % 2),
+            "balconies": i % 2,
+            "furnishing": ["Furnished", "Semi-Furnished", "Unfurnished"][i % 3],
+            "area_rate": 50.0 + (i * 5.0),
+            "rent": 20000.0 + (i * 10000.0),
+            "owner": users[i % len(users)],
+            "image_prefix": f"{idx}image"  # Images: 13image1.jpg to 24image5.jpg
+        })
 
     # Save properties for sale
+    print(f"Saving {len(properties_for_sale)} properties for sale...")
     for prop_data in properties_for_sale:
         property_sale = PropertyForSale(
             house_type=prop_data["house_type"],
@@ -133,24 +126,30 @@ def run():
         # Set the 5 images using the image prefix
         image_prefix = prop_data["image_prefix"]
         for i in range(1, 6):
-            image_name = f"{image_prefix}{i}.jpg"
-            image_path = os.path.join(media_images_dir, image_name)
+            image_field = getattr(property_sale, f"image{i}")
+            image_assigned = False
             
-            # Check if the image already exists in the media directory
-            if os.path.exists(image_path):
-                # Set the corresponding image field
-                with open(image_path, 'rb') as f:
-                    image_field = getattr(property_sale, f"image{i}")
-                    image_field.save(image_name, File(f))
-                print(f"Set image{i} for sale property: {prop_data['house_type']} in {prop_data['locality']} using {image_name}")
-            else:
-                # Create a placeholder image if it doesn't exist
-                print(f"Warning: Image {image_name} not found for sale property {prop_data['house_type']} in {prop_data['locality']}")
+            # Try each extension
+            for ext in image_extensions:
+                image_name = f"{image_prefix}{i}{ext}"
+                image_path = os.path.join(media_images_dir, image_name)
                 
+                # Check if the image exists in the media directory
+                if os.path.exists(image_path):
+                    with open(image_path, 'rb') as f:
+                        image_field.save(image_name, File(f))
+                    print(f"Set image{i} for sale property: {prop_data['house_type']} in {prop_data['locality']} using {image_name}")
+                    image_assigned = True
+                    break
+            
+            if not image_assigned:
+                print(f"Warning: No image found for sale property {prop_data['house_type']} in {prop_data['locality']} for image{i} with prefix {image_prefix}")
         
         property_sale.save()
+    print(f"Saved {PropertyForSale.objects.count()} properties for sale.")
 
     # Save properties for rent
+    print(f"Saving {len(properties_for_rent)} properties for rent...")
     for prop_data in properties_for_rent:
         property_rent = PropertyForRent(
             house_type=prop_data["house_type"],
@@ -169,21 +168,27 @@ def run():
         # Set the 5 images using the image prefix
         image_prefix = prop_data["image_prefix"]
         for i in range(1, 6):
-            image_name = f"{image_prefix}{i}.jpg"
-            image_path = os.path.join(media_images_dir, image_name)
+            image_field = getattr(property_rent, f"image{i}")
+            image_assigned = False
             
-            # Check if the image already exists in the media directory
-            if os.path.exists(image_path):
-                # Set the corresponding image field
-                with open(image_path, 'rb') as f:
-                    image_field = getattr(property_rent, f"image{i}")
-                    image_field.save(image_name, File(f))
-                print(f"Set image{i} for rent property: {prop_data['house_type']} in {prop_data['locality']} using {image_name}")
-            else:
-                # Create a placeholder image if it doesn't exist
-                print(f"Warning: Image {image_name} not found for rent property {prop_data['house_type']} in {prop_data['locality']}")
+            # Try each extension
+            for ext in image_extensions:
+                image_name = f"{image_prefix}{i}{ext}"
+                image_path = os.path.join(media_images_dir, image_name)
+                
+                # Check if the image exists in the media directory
+                if os.path.exists(image_path):
+                    with open(image_path, 'rb') as f:
+                        image_field.save(image_name, File(f))
+                    print(f"Set image{i} for rent property: {prop_data['house_type']} in {prop_data['locality']} using {image_name}")
+                    image_assigned = True
+                    break
+            
+            if not image_assigned:
+                print(f"Warning: No image found for rent property {prop_data['house_type']} in {prop_data['locality']} for image{i} with prefix {image_prefix}")
         
         property_rent.save()
+    print(f"Saved {PropertyForRent.objects.count()} properties for rent.")
 
     print("Database seeded successfully!")
 

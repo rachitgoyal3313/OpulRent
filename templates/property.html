@@ -1,0 +1,312 @@
+{% extends "base.html" %}
+
+{% block title %}{{ property.house_type }} | OpulRent{% endblock %}
+
+{% block extra_css %}
+<style>
+:root {
+    --primary-color: #8A2BE2;
+    --primary-light: #9D4EDD;
+    --dark-bg: #050714;
+    --card-bg: #141429;
+    --section-bg: #0A0B1E;
+    --text-light: #FFFFFF;
+    --text-secondary: #AAAACC;
+    --success-color: #4EDD9D;
+}
+
+body {
+    background-color: var(--dark-bg);
+    color: var(--text-light);
+    font-family: 'Inter', sans-serif;
+}
+
+h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.property-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.property-details {
+    background-color: var(--card-bg);
+    border-radius: 0.75rem;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.property-image-carousel {
+    position: relative;
+    width: 100%;
+    height: 400px;
+    background-color: #1a1a2e;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+.carousel-slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+.carousel-slide.active {
+    opacity: 1;
+}
+
+.carousel-slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.carousel-prev, .carousel-next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.carousel-prev {
+    left: 10px;
+}
+
+.carousel-next {
+    right: 10px;
+}
+
+.carousel-controls {
+    position: absolute;
+    bottom: 10px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    z-index: 2;
+}
+
+.carousel-dot {
+    width: 10px;
+    height: 10px;
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.carousel-dot.active {
+    background-color: white;
+}
+
+.property-info h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.property-info p {
+    margin-bottom: 1rem;
+    color: var(--text-secondary);
+}
+
+.property-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+
+.property-price {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--text-light);
+    margin-bottom: 1rem;
+}
+
+.action-button {
+    padding: 0.8rem 2rem;
+    background-color: var(--primary-color);
+    color: white;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    text-decoration: none;
+    display: inline-block;
+    transition: background-color 0.3s ease;
+}
+
+.action-button:hover {
+    background-color: var(--primary-light);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="property-container">
+    <div class="property-details">
+        <!-- Carousel Section (unchanged) -->
+
+        <div class="property-image-carousel" id="property-carousel">
+            {% if property.image1 %}
+            <div class="carousel-slide active">
+                <img src="{{ property.image1.url }}" alt="{{ property.house_type }} - Image 1">
+            </div>
+            {% endif %}
+            {% if property.image2 %}
+            <div class="carousel-slide">
+                <img src="{{ property.image2.url }}" alt="{{ property.house_type }} - Image 2">
+            </div>
+            {% endif %}
+            {% if property.image3 %}
+            <div class="carousel-slide">
+                <img src="{{ property.image3.url }}" alt="{{ property.house_type }} - Image 3">
+            </div>
+            {% endif %}
+            {% if property.image4 %}
+            <div class="carousel-slide">
+                <img src="{{ property.image4.url }}" alt="{{ property.house_type }} - Image 4">
+            </div>
+            {% endif %}
+            {% if property.image5 %}
+            <div class="carousel-slide">
+                <img src="{{ property.image5.url }}" alt="{{ property.house_type }} - Image 5">
+            </div>
+            {% endif %}
+            {% if not property.image1 %}
+            <div class="carousel-slide active">
+                <span style="color: #555; display: flex; align-items: center; justify-content: center; height: 100%;">🖼 No Image Available</span>
+            </div>
+            {% endif %}
+
+            {% if property.image1 %}
+            <button class="carousel-prev" onclick="prevSlide('property-carousel')">❮</button>
+            <button class="carousel-next" onclick="nextSlide('property-carousel')">❯</button>
+            <div class="carousel-controls">
+                {% if property.image1 %}<div class="carousel-dot active" onclick="goToSlide('property-carousel', 0)"></div>{% endif %}
+                {% if property.image2 %}<div class="carousel-dot" onclick="goToSlide('property-carousel', 1)"></div>{% endif %}
+                {% if property.image3 %}<div class="carousel-dot" onclick="goToSlide('property-carousel', 2)"></div>{% endif %}
+                {% if property.image4 %}<div class="carousel-dot" onclick="goToSlide('property-carousel', 3)"></div>{% endif %}
+                {% if property.image5 %}<div class="carousel-dot" onclick="goToSlide('property-carousel', 4)"></div>{% endif %}
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="property-info">
+            <h1>{{ property.house_type }}</h1>
+            <p style="font-size: 1rem;">📍 {{ property.locality }}, {{ property.city }}</p>
+            <div class="property-price">
+                {% if property_type == 'sale' %}
+                    {{ property.sale_price }} ETH
+                {% else %}
+                    {{ property.rent }} ETH/month
+                {% endif %}
+            </div>
+            <div class="property-meta">
+                <span>🛏 {{ property.beds }} Beds</span>
+                <span>🛁 {{ property.bathrooms }} Baths</span>
+                <span>📐 {{ property.area }} sqft</span>
+                <span>🪑 {{ property.furnishing }}</span>
+                <span>🌄 {{ property.balconies }} Balconies</span>
+            </div>
+            <p>Area Rate: {{ property.area_rate }} ETH/sqft</p>
+            <p>Owner: {{ property.owner.username }}</p>
+            {% if user.is_authenticated %}
+            <a href="{% url 'property_action' property.id property_type %}" class="action-button">
+                {% if property_type == 'sale' %}Buy Now{% else %}Rent Now{% endif %}
+            </a>
+            {% else %}
+            <a href="{% url 'login' %}" class="action-button">Login to {% if property_type == 'sale' %}Buy{% else %}Rent{% endif %}</a>
+            {% endif %}
+        </div>
+
+        {% if property_type == 'sale' %}
+        <div style="margin-top: 2rem; background-color: #1a1a2e; padding: 1.5rem; border-radius: 0.5rem;">
+            <h3 style="margin-bottom: 1rem;">Fractional Purchase</h3>
+            <form action="{% url 'property_action' property.id 'sale' %}" method="post">
+                {% csrf_token %}
+                <label for="units">Units to buy (max {{ units_available }}):</label>
+                <input type="number" id="units" name="units" min="1" max="{{ units_available }}" value="1" oninput="updateTotalPrice()" style="margin: 0.5rem 0; padding: 0.3rem;">
+                <div style="margin-bottom: 0.5rem;">
+                    <span>Unit price: <span id="unitPrice">{{ unit_price|floatformat:4 }}</span> ETH</span>
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <span>Total price: <span id="totalPrice">{{ unit_price|floatformat:4 }}</span> ETH</span>
+                </div>
+                <button type="submit" class="action-button">Buy Units</button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function nextSlide(carouselId) {
+    const carousel = document.getElementById(carouselId);
+    const slides = carousel.querySelectorAll('.carousel-slide');
+    const dots = carousel.querySelectorAll('.carousel-dot');
+
+    let activeIndex = Array.from(slides).findIndex(slide => slide.classList.contains('active'));
+    slides[activeIndex].classList.remove('active');
+    dots[activeIndex].classList.remove('active');
+
+    activeIndex = (activeIndex + 1) % slides.length;
+    slides[activeIndex].classList.add('active');
+    dots[activeIndex].classList.add('active');
+}
+
+function prevSlide(carouselId) {
+    const carousel = document.getElementById(carouselId);
+    const slides = carousel.querySelectorAll('.carousel-slide');
+    const dots = carousel.querySelectorAll('.carousel-dot');
+
+    let activeIndex = Array.from(slides).findIndex(slide => slide.classList.contains('active'));
+    slides[activeIndex].classList.remove('active');
+    dots[activeIndex].classList.remove('active');
+
+    activeIndex = (activeIndex - 1 + slides.length) % slides.length;
+    slides[activeIndex].classList.add('active');
+    dots[activeIndex].classList.add('active');
+}
+
+function goToSlide(carouselId, index) {
+    const carousel = document.getElementById(carouselId);
+    const slides = carousel.querySelectorAll('.carousel-slide');
+    const dots = carousel.querySelectorAll('.carousel-dot');
+
+    slides.forEach(slide => slide.classList.remove('active'));
+    dots.forEach(dot => dot.classList.remove('active'));
+
+    slides[index].classList.add('active');
+    dots[index].classList.add('active');
+}
+
+function updateTotalPrice() {
+    var units = document.getElementById('units').value;
+    var unitPrice = parseFloat(document.getElementById('unitPrice').textContent);
+    var totalPrice = (units * unitPrice).toFixed(4);
+    document.getElementById('totalPrice').textContent = totalPrice;
+}
+</script>
+{% endblock %}

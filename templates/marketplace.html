@@ -173,6 +173,43 @@ button.inactive {
     color: var(--text-secondary);
 }
 
+.fractional-buy {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background-color: var(--section-bg);
+    border-radius: 0.5rem;
+    font-size: 0.85rem;
+}
+
+.fractional-buy label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-secondary);
+}
+
+.fractional-buy input[type="number"] {
+    width: 60px;
+    padding: 0.5rem;
+    background-color: var(--card-bg);
+    color: var(--text-light);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.25rem;
+    margin-right: 0.5rem;
+}
+
+.fractional-buy button {
+    padding: 0.5rem 1rem;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 0.25rem;
+    cursor: pointer;
+}
+
+.fractional-buy button:hover {
+    background-color: var(--primary-light);
+}
+
 /* Image carousel styles */
 .image-carousel {
     position: relative;
@@ -213,9 +250,9 @@ button.inactive {
 
     <!-- Toggle Buttons -->
     <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
-        <button onclick="window.location.href='{% url 'buy_properties' %}'" class="inactive">Buy</button>
-        <button onclick="window.location.href='{% url 'rent_properties' %}'" class="inactive">Rent</button>
-        <button onclick="window.location.href='{% url 'marketplace' %}'" class="active">All</button>
+        <a href="{% url 'marketplace' %}"><button type="button" class="active">All</button></a>
+        <a href="{% url 'buy_properties' %}"><button type="button" class="inactive">Buy</button></a>
+        <a href="{% url 'rent_properties' %}"><button type="button" class="inactive">Rent</button></a>
     </div>
 
     <!-- Property Cards -->
@@ -292,6 +329,18 @@ button.inactive {
                         <span>🛁 {{ property.bathrooms }} Baths</span>
                         <span>📐 {{ property.area }} sqft</span>
                     </div>
+                    
+                    {% if property.sale_price and property.units_available > 0 %}
+                    <div class="fractional-buy">
+                        <form action="{% url 'property_detail' property.id 'sale' %}" method="get">
+                            <label>Fractional Buy:</label>
+                            <span>{{ property.units_available }} units available</span>
+                            <span>Unit price: {{ property.unit_price|floatformat:4 }} ETH</span>
+                            <input type="number" name="units" min="1" max="{{ property.units_available }}" value="1">
+                            <button type="submit">Buy Units</button>
+                        </form>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </a>
@@ -363,4 +412,3 @@ button.inactive {
     }
 </script>
 {% endblock %}
-

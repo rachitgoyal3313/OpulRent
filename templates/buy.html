@@ -12,6 +12,7 @@
     --section-bg: #0A0B1E;
     --text-light: #FFFFFF;
     --text-secondary: #AAAACC;
+    --success-color: #4EDD9D;
 }
 
 body {
@@ -79,12 +80,64 @@ button.inactive {
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
+    overflow: hidden;
 }
 
 .property-image img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+}
+
+/* Carousel controls */
+.carousel-controls {
+    position: absolute;
+    bottom: 10px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    z-index: 2;
+}
+
+.carousel-dot {
+    width: 8px;
+    height: 8px;
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.carousel-dot.active {
+    background-color: white;
+}
+
+.carousel-prev, .carousel-next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.carousel-prev {
+    left: 10px;
+}
+
+.carousel-next {
+    right: 10px;
 }
 
 .property-tag {
@@ -96,6 +149,7 @@ button.inactive {
     padding: 0.3rem 0.75rem;
     font-size: 0.75rem;
     border-radius: 1rem;
+    z-index: 1;
 }
 
 .property-info {
@@ -118,6 +172,64 @@ button.inactive {
     font-size: 0.85rem;
     color: var(--text-secondary);
 }
+
+.fractional-buy {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background-color: var(--section-bg);
+    border-radius: 0.5rem;
+    font-size: 0.85rem;
+}
+
+.fractional-buy label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-secondary);
+}
+
+.fractional-buy input[type="number"] {
+    width: 60px;
+    padding: 0.5rem;
+    background-color: var(--card-bg);
+    color: var(--text-light);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.25rem;
+    margin-right: 0.5rem;
+}
+
+.fractional-buy button {
+    padding: 0.5rem 1rem;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 0.25rem;
+    cursor: pointer;
+}
+
+.fractional-buy button:hover {
+    background-color: var(--primary-light);
+}
+
+/* Image carousel styles */
+.image-carousel {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.carousel-slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+.carousel-slide.active {
+    opacity: 1;
+}
 </style>
 {% endblock %}
 
@@ -138,9 +250,9 @@ button.inactive {
 
     <!-- Toggle Buttons -->
     <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
-        <button onclick="window.location.href='{% url 'buy_properties' %}'" class="active">Buy</button>
-        <button onclick="window.location.href='{% url 'rent_properties' %}'" class="inactive">Rent</button>
-        <button onclick="window.location.href='{% url 'marketplace' %}'" class="inactive">All</button>
+        <a href="{% url 'buy_properties' %}"><button type="button" class="active">Buy</button></a>
+        <a href="{% url 'rent_properties' %}"><button type="button" class="inactive">Rent</button></a>
+        <a href="{% url 'marketplace' %}"><button type="button" class="inactive">All</button></a>
     </div>
 
     <!-- Property Cards -->
@@ -149,10 +261,54 @@ button.inactive {
         <a href="{% url 'property_detail' property.id 'sale' %}" style="text-decoration: none; color: inherit;">
             <div class="property-card">
                 <div class="property-image">
-                    {% if property.images %}
-                    <img src="{{ property.images.url }}" alt="{{ property.house_type }}">
-                    {% else %}
-                    <span style="color: #555;">🖼</span>
+                    <div class="image-carousel" id="carousel-{{ property.id }}">
+                        {% if property.image1 %}
+                        <div class="carousel-slide active">
+                            <img src="{{ property.image1.url }}" alt="{{ property.house_type }} - Image 1">
+                        </div>
+                        {% endif %}
+                        
+                        {% if property.image2 %}
+                        <div class="carousel-slide">
+                            <img src="{{ property.image2.url }}" alt="{{ property.house_type }} - Image 2">
+                        </div>
+                        {% endif %}
+                        
+                        {% if property.image3 %}
+                        <div class="carousel-slide">
+                            <img src="{{ property.image3.url }}" alt="{{ property.house_type }} - Image 3">
+                        </div>
+                        {% endif %}
+                        
+                        {% if property.image4 %}
+                        <div class="carousel-slide">
+                            <img src="{{ property.image4.url }}" alt="{{ property.house_type }} - Image 4">
+                        </div>
+                        {% endif %}
+                        
+                        {% if property.image5 %}
+                        <div class="carousel-slide">
+                            <img src="{{ property.image5.url }}" alt="{{ property.house_type }} - Image 5">
+                        </div>
+                        {% endif %}
+                        
+                        {% if not property.image1 %}
+                        <span style="color: #555;">🖼</span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Carousel navigation -->
+                    {% if property.image1 %}
+                    <button class="carousel-prev" onclick="prevSlide(event, 'carousel-{{ property.id }}')">❮</button>
+                    <button class="carousel-next" onclick="nextSlide(event, 'carousel-{{ property.id }}')">❯</button>
+                    
+                    <div class="carousel-controls">
+                        {% if property.image1 %}<div class="carousel-dot active" onclick="goToSlide(event, 'carousel-{{ property.id }}', 0)"></div>{% endif %}
+                        {% if property.image2 %}<div class="carousel-dot" onclick="goToSlide(event, 'carousel-{{ property.id }}', 1)"></div>{% endif %}
+                        {% if property.image3 %}<div class="carousel-dot" onclick="goToSlide(event, 'carousel-{{ property.id }}', 2)"></div>{% endif %}
+                        {% if property.image4 %}<div class="carousel-dot" onclick="goToSlide(event, 'carousel-{{ property.id }}', 3)"></div>{% endif %}
+                        {% if property.image5 %}<div class="carousel-dot" onclick="goToSlide(event, 'carousel-{{ property.id }}', 4)"></div>{% endif %}
+                    </div>
                     {% endif %}
                 </div>
                 <span class="property-tag">For Sale</span>
@@ -165,6 +321,18 @@ button.inactive {
                         <span>🛁 {{ property.bathrooms }} Baths</span>
                         <span>📐 {{ property.area }} sqft</span>
                     </div>
+                    
+                    {% if property.units_available > 0 %}
+                    <div class="fractional-buy">
+                        <form action="{% url 'property_detail' property.id 'sale' %}" method="get">
+                            <label>Fractional Buy:</label>
+                            <span>{{ property.units_available }} units available</span>
+                            <span>Unit price: {{ property.unit_price|floatformat:4 }} ETH</span>
+                            <input type="number" name="units" min="1" max="{{ property.units_available }}" value="1">
+                            <button type="submit">Buy Units</button>
+                        </form>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </a>
@@ -173,4 +341,64 @@ button.inactive {
         {% endfor %}
     </div>
 </section>
+
+<!-- JavaScript for carousel functionality -->
+<script>
+    // Prevent link navigation when clicking carousel controls
+    document.querySelectorAll('.carousel-prev, .carousel-next, .carousel-dot').forEach(control => {
+        control.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        });
+    });
+    
+    function nextSlide(event, carouselId) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        const carousel = document.getElementById(carouselId);
+        const slides = carousel.querySelectorAll('.carousel-slide');
+        const dots = carousel.parentElement.querySelectorAll('.carousel-dot');
+        
+        let activeIndex = Array.from(slides).findIndex(slide => slide.classList.contains('active'));
+        slides[activeIndex].classList.remove('active');
+        dots[activeIndex].classList.remove('active');
+        
+        activeIndex = (activeIndex + 1) % slides.length;
+        slides[activeIndex].classList.add('active');
+        dots[activeIndex].classList.add('active');
+    }
+    
+    function prevSlide(event, carouselId) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        const carousel = document.getElementById(carouselId);
+        const slides = carousel.querySelectorAll('.carousel-slide');
+        const dots = carousel.parentElement.querySelectorAll('.carousel-dot');
+        
+        let activeIndex = Array.from(slides).findIndex(slide => slide.classList.contains('active'));
+        slides[activeIndex].classList.remove('active');
+        dots[activeIndex].classList.remove('active');
+        
+        activeIndex = (activeIndex - 1 + slides.length) % slides.length;
+        slides[activeIndex].classList.add('active');
+        dots[activeIndex].classList.add('active');
+    }
+
+    function goToSlide(event, carouselId, index) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        const carousel = document.getElementById(carouselId);
+        const slides = carousel.querySelectorAll('.carousel-slide');
+        const dots = carousel.parentElement.querySelectorAll('.carousel-dot');
+        
+        slides.forEach(slide => slide.classList.remove('active'));
+        dots.forEach(dot => dot.classList.remove('active'));
+        
+        slides[index].classList.add('active');
+        dots[index].classList.add('active');
+    }
+</script>
 {% endblock %}
