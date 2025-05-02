@@ -130,7 +130,7 @@
         </div>
         <div class="dashboard-card">
             <p class="label">Properties Owned</p>
-            <p class="value">{{ owned_sale.count|add:owned_rent.count }}</p>
+            <p class="value">{{ total_properties_owned }}</p>
         </div>
         <div class="dashboard-card">
             <p class="label">Rental Income (ETH)</p>
@@ -193,7 +193,8 @@
 
     <!-- Purchased Properties -->
     <div id="purchased" class="property-grid tab-content" style="display: none;">
-        {% for transaction in purchased %}
+        {% for transaction in purchased_transactions %}
+        {% if transaction.property_sale %}
         <div class="property-card">
             {% if transaction.property_sale.image1 %}
                 <div class="property-image"><img src="{{ transaction.property_sale.image1.url }}" alt="{{ transaction.property_sale.house_type }}"></div>
@@ -209,6 +210,7 @@
                 <p>Purchased on: {{ transaction.date|date:"M d, Y" }}</p>
             </div>
         </div>
+        {% endif %}
         {% empty %}
         <p>No purchased properties.</p>
         {% endfor %}

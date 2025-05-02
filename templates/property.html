@@ -3,6 +3,7 @@
 {% block title %}{{ property.house_type }} | OpulRent{% endblock %}
 
 {% block extra_css %}
+<script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
 <style>
 :root {
     --primary-color: #8A2BE2;
@@ -233,9 +234,10 @@ h1 {
             <p>Area Rate: {{ property.area_rate }} ETH/sqft</p>
             <p>Owner: {{ property.owner.username }}</p>
             {% if user.is_authenticated %}
-            <a href="{% url 'property_action' property.id property_type %}" class="action-button">
-                {% if property_type == 'sale' %}Buy Now{% else %}Rent Now{% endif %}
-            </a>
+            <button onclick="buyWithMetaMask({{ property.id }}, {{ property.sale_price }})" class="action-button">
+                Buy Now with MetaMask
+            </button>
+            
             {% else %}
             <a href="{% url 'login' %}" class="action-button">Login to {% if property_type == 'sale' %}Buy{% else %}Rent{% endif %}</a>
             {% endif %}
@@ -254,7 +256,12 @@ h1 {
                 <div style="margin-bottom: 1rem;">
                     <span>Total price: <span id="totalPrice">{{ unit_price|floatformat:4 }}</span> ETH</span>
                 </div>
-                <button type="submit" class="action-button">Buy Units</button>
+                <!-- <input type="number" id="units-{{ property.id }}" min="1" placeholder="Units to Buy" class="unit-input"/> -->
+                <button onclick="buyUnitsWithMetaMask({{ property.id }}, {{ property.unit_price }})" class="action-button">
+                    Buy Units
+                </button>
+
+                 
             </form>
         </div>
         {% endif %}
@@ -309,4 +316,369 @@ function updateTotalPrice() {
     document.getElementById('totalPrice').textContent = totalPrice;
 }
 </script>
+<script>
+    const contractAddress = "0xb0d85c86e60e258D4850de6109Fb12cfBA9FaA1E"; // Replace with actual deployed address
+    const contractABI = [
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_propertyId",
+				"type": "uint256"
+			}
+		],
+		"name": "buyProperty",
+		"outputs": [],
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "id",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "location",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "price",
+				"type": "uint256"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "owner",
+				"type": "address"
+			}
+		],
+		"name": "PropertyRegistered",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "id",
+				"type": "uint256"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "price",
+				"type": "uint256"
+			}
+		],
+		"name": "PropertySold",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "_name",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "_location",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_price",
+				"type": "uint256"
+			}
+		],
+		"name": "registerProperty",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getAllProperties",
+		"outputs": [
+			{
+				"components": [
+					{
+						"internalType": "uint256",
+						"name": "id",
+						"type": "uint256"
+					},
+					{
+						"internalType": "string",
+						"name": "name",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "location",
+						"type": "string"
+					},
+					{
+						"internalType": "uint256",
+						"name": "price",
+						"type": "uint256"
+					},
+					{
+						"internalType": "address payable",
+						"name": "currentOwner",
+						"type": "address"
+					},
+					{
+						"internalType": "bool",
+						"name": "isListed",
+						"type": "bool"
+					}
+				],
+				"internalType": "struct RealEstateMarketplace.Property[]",
+				"name": "",
+				"type": "tuple[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_owner",
+				"type": "address"
+			}
+		],
+		"name": "getPropertiesOfOwner",
+		"outputs": [
+			{
+				"internalType": "uint256[]",
+				"name": "",
+				"type": "uint256[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "nextPropertyId",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "ownerProperties",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "properties",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "id",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "location",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "price",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address payable",
+				"name": "currentOwner",
+				"type": "address"
+			},
+			{
+				"internalType": "bool",
+				"name": "isListed",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+];
+    
+    let web3;
+    let contract;
+    
+    window.addEventListener('load', async () => {
+        if (window.ethereum) {
+            web3 = new Web3(window.ethereum);
+            await window.ethereum.request({ method: 'eth_requestAccounts' });
+            contract = new web3.eth.Contract(contractABI, contractAddress);
+        } else {
+            alert("Please install MetaMask to use this feature!");
+        }
+    });
+    
+    async function buyWithMetaMask(propertyId, priceInEth) {
+        const accounts = await web3.eth.getAccounts();
+        const account = accounts[0];
+    
+        try {
+            const priceWei = web3.utils.toWei(priceInEth.toString(), 'ether');
+            await contract.methods.buyProperty(propertyId).send({
+                from: account,
+                value: priceWei
+            });
+            alert("Transaction successful!");
+            window.location.reload(); // or redirect
+        } catch (err) {
+            console.error(err);
+            alert("Transaction failed!");
+        }
+    }
+    
+    </script>
+    <script>
+        async function buyWithMetaMask(propertyId, priceInEth) {
+            if (typeof window.ethereum === 'undefined') {
+                alert("MetaMask is not installed. Please install MetaMask and try again.");
+                return;
+            }
+        
+            try {
+                // Request account access if needed
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                const userAddress = accounts[0];
+        
+                // Create Web3 instance
+                const web3 = new Web3(window.ethereum);
+        
+                // Convert price to Wei
+                const priceInWei = web3.utils.toWei(priceInEth.toString(), 'ether');
+        
+                // Create contract instance
+                const contract = new web3.eth.Contract(contractABI, contractAddress);
+        
+                // Call buyProperty method
+                await contract.methods.buyProperty(propertyId).send({
+                    from: userAddress,
+                    value: priceInWei,
+                });
+        
+                alert("Transaction successful! Property purchased.");
+                // Optionally reload the page or redirect to dashboard
+                location.reload();
+        
+            } catch (error) {
+                console.error("Transaction failed:", error);
+                alert("Transaction failed. Check console for details.");
+            }
+        }
+        </script>
+        <script>
+            async function buyUnitsWithMetaMask(propertyId, unitPriceInEth) {
+                const unitInput = document.getElementById(units-${propertyId});
+                const unitsToBuy = parseInt(unitInput.value);
+            
+                // if (isNaN(unitsToBuy) || unitsToBuy <= 0) {
+                //     alert("Please enter a valid number of units to buy.");
+                //     return;
+                // }
+            
+                if (typeof window.ethereum === 'undefined') {
+                    alert("MetaMask is not installed. Please install MetaMask and try again.");
+                    return;
+                }
+            
+                try {
+                    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    const userAddress = accounts[0];
+                    const web3 = new Web3(window.ethereum);
+            
+                    const totalPriceInEth = unitPriceInEth * unitsToBuy;
+                    const priceInWei = web3.utils.toWei(totalPriceInEth.toString(), 'ether');
+            
+                    const contract = new web3.eth.Contract(contractABI, contractAddress);
+            
+                    await contract.methods.buyUnits(propertyId, unitsToBuy).send({
+                        from: userAddress,
+                        value: priceInWei,
+                    });
+            
+                    alert("Units purchased successfully!");
+                    location.reload();
+            
+                } catch (error) {
+                    console.error("Unit purchase failed:", error);
+                    alert("Transaction failed. Check console for details.");
+                }
+            }
+            </script>
+            
+        
+    
 {% endblock %}

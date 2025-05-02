@@ -175,9 +175,17 @@
             <form method="post" action="{% url 'analyze' %}">
                 {% csrf_token %}
                 <div class="form-group">
-                    <label for="location" class="form-label">Location *</label>
-                    <input type="text" name="location" id="location" class="form-control" required>
+                    <label for="location" class="form-label">City *</label>
+                    <select name="location" id="location" class="form-control" required>
+                        <option value="">-- Select City --</option>
+                        <option value="Mumbai">Mumbai</option>
+                        <option value="Pune">Pune</option>
+                        <option value="Nagpur">Nagpur</option>
+                        <option value="Bangalore">Bangalore</option>
+                        <option value="New Delhi">New Delhi</option>
+                    </select>
                 </div>
+                
 
                 <div class="form-row">
                     <div class="form-group">
@@ -185,7 +193,7 @@
                         <input type="number" name="size" id="size" class="form-control" required min="1">
                     </div>
                     <div class="form-group">
-                        <label for="price" class="form-label">Price (USD) *</label>
+                        <label for="price" class="form-label">Price (INR) *</label>
                         <input type="number" name="price" id="price" class="form-control" required min="1">
                     </div>
                 </div>
@@ -259,7 +267,7 @@
 
             <h3 class="card-title">Investment Summary</h3>
             <div class="summary-box">
-                <p>Based on our AI analysis, this property has an estimated monthly rental income of ${{ prediction.predicted_rent|floatformat:2 }}, 
+                <p>Based on our AI analysis, this property has an estimated monthly rental income of ₹{{ prediction.predicted_rent|floatformat:2 }}, 
                 providing an annual ROI of {{ prediction.predicted_roi|floatformat:2 }}%. The area has a growth score of 
                 {{ prediction.predicted_growth }}/10, indicating potential for property value appreciation.</p>
             </div>

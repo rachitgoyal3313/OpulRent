@@ -89,6 +89,7 @@ def run():
 
     # Properties for Sale (12 properties with prefixes 1image to 12image)
     properties_for_sale = []
+    sale_prices = [1.0, 2.0, 3.0]  # ETH values for sale prices
     for i in range(12):
         idx = i + 1
         loc_idx = i % len(locations)
@@ -102,13 +103,14 @@ def run():
             "balconies": i % 3,
             "furnishing": ["Furnished", "Semi-Furnished", "Unfurnished"][i % 3],
             "area_rate": 100.0 + (i * 10.0),
-            "sale_price": 50000.0 + (i * 25000.0),
+            "sale_price": sale_prices[i % len(sale_prices)],  # 1, 2, or 3 ETH
             "owner": users[i % len(users)],
             "image_prefix": f"{idx}image"  # Images: 1image1.jpg to 12image5.jpg
         })
 
     # Properties for Rent (12 properties with prefixes 13image to 24image)
     properties_for_rent = []
+    rent_prices = [0.1, 0.2]  # ETH values for rent prices
     for i in range(12):
         idx = i + 13
         loc_idx = i % len(locations)
@@ -122,7 +124,7 @@ def run():
             "balconies": i % 2,
             "furnishing": ["Furnished", "Semi-Furnished", "Unfurnished"][i % 3],
             "area_rate": 50.0 + (i * 5.0),
-            "rent": 20000.0 + (i * 10000.0),
+            "rent": rent_prices[i % len(rent_prices)],  # 0.1 or 0.2 ETH
             "owner": users[i % len(users)],
             "image_prefix": f"{idx}image"  # Images: 13image1.jpg to 24image5.jpg
         })

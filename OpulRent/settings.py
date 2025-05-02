@@ -40,7 +40,6 @@ INSTALLED_APPS = [
     'analysis',
     'blockchain',
     'dashboard',
-    'kyc',
     'property',
     'users',
 ]

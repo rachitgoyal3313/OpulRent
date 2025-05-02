@@ -14,7 +14,7 @@ class Transaction(models.Model):
     seller = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sold_properties')
     transaction_type = models.CharField(max_length=20, choices=TRANSACTION_TYPE)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    units = models.IntegerField(default=0)  # For sale transactions
+    units = models.IntegerField(default=0)
     date = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):

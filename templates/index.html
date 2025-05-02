@@ -102,6 +102,14 @@
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
 }
 
+.property-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+}
+
 .property-indicator {
     width: 32px;
     height: 32px;
@@ -247,16 +255,11 @@
             <br>Blockchain Real Estate
         </h1>
         <p class="hero-description">
-            Revolutionizing real estate with blockchain technology and AI-powered investment analysis. Buy, rent, and invest in properties as NFTs.
+            Revolutionizing real estate with blockchain multiplicity and AI-powered investment analysis. Buy, rent, and invest in properties as NFTs.
         </p>
         <div class="hero-buttons">
-            <button class="primary-button">
-                Connect Wallet
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="m9 18 6-6-6-6"></path>
-                </svg>
-            </button>
-            <button class="secondary-button">Explore Marketplace</button>
+            
+            <a href="{% url 'marketplace' %}"><button class="secondary-button">Explore Marketplace</button></a>
         </div>
         <div class="features">
             <div class="feature">
@@ -270,7 +273,7 @@
             <div class="feature">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    <path d="M7 11V7a5  толстые 0 0 1 10 0v4"></path>
                 </svg>
                 Secure Transactions
             </div>
@@ -284,25 +287,46 @@
             </div>
         </div>
     </div>
+    {% if property %}
     <div class="property-card">
-        <div class="property-indicator"></div>
-        <h3 class="property-title">Luxury Apartment #024</h3>
+        {% if property.image1 %}
+        <img src="{{ property.image1.url }}" alt="{{ property.house_type }} in {{ property.locality }}" class="property-image">
+        {% else %}
+        <img src="{% static 'images/placeholder_property.jpg' %}" alt="No image available" class="property-image">
+        {% endif %}
+        <h3 class="property-title">{{ property.house_type }} in {{ property.locality }}</h3>
         <div class="property-details">
             <div class="property-detail">
                 <span class="property-detail-label">Price:</span>
-                <span class="property-detail-value">2.5 ETH</span>
+                <span class="property-detail-value">
+                    {% if property_type == 'sale' %}
+                        {{ property.unit_price }} ETH/unit
+                    {% else %}
+                        {{ property.rent }} ETH/month
+                    {% endif %}
+                </span>
             </div>
             <div class="property-detail">
                 <span class="property-detail-label">Location:</span>
-                <span class="property-detail-value">Manhattan, NY</span>
+                <span class="property-detail-value">{{ property.city }}</span>
             </div>
             <div class="property-detail">
-                <span class="property-detail-label">ROI:</span>
-                <span class="property-detail-value roi-value">8.2%</span>
+                <span class="property-detail-label">Beds:</span>
+                <span class="property-detail-value">{{ property.beds }}</span>
             </div>
         </div>
-        <button class="view-property">View Property</button>
+        <a href="{% url 'property_detail' property.id property_type %}" class="view-property" style="text-decoration: none;">View Property</a>
     </div>
+    {% else %}
+    <div class="property-card">
+        <img src="{% static 'images/placeholder_property.jpg' %}" alt="No image available" class="property-image">
+        <div class="property-indicator"></div>
+        <h3 class="property-title">No Properties Available</h3>
+        <div class="property-details">
+            <p>No properties are currently available. Check back soon!</p>
+        </div>
+    </div>
+    {% endif %}
 </section>
 
 <section class="how-it-works">
@@ -358,17 +382,14 @@
 {{ block.super }}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Marketplace button functionality
-        const marketplaceButton = document.querySelector('.secondary-button');
-        marketplaceButton.addEventListener('click', function() {
-            window.location.href = "{% url 'marketplace' %}";
-        });
-        
-        // View property button functionality
-        const viewPropertyButton = document.querySelector('.view-property');
-        viewPropertyButton.addEventListener('click', function() {
-            window.location.href = "{% url 'property_detail' %}?id=024";
-        });
+        // Ensure the Connect Wallet button uses the base.html connectWallet function
+        const connectWalletButton = document.querySelector('.primary-button');
+        if (connectWalletButton && connectWalletButton.textContent.includes('Connect Wallet')) {
+            connectWalletButton.addEventListener('click', async function() {
+                await connectWallet();
+                updateWalletButtonState();
+            });
+        }
     });
 </script>
 {% endblock %}
