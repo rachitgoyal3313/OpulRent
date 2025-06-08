@@ -11,7 +11,6 @@ import joblib
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_PATH = os.path.join(BASE_DIR, 'cities_with_varied_estimated_prices.xlsx')
 
-# Growth scores by city
 CITY_GROWTH_SCORES = {
     'Mumbai': 9.0,
     'Pune': 8.5,
