@@ -4,6 +4,9 @@ from django.contrib import messages
 from .forms import RegistrationForm, LoginForm
 from django.contrib.auth.decorators import login_required
 
+
+
+# registration form
 def register(request):
     if request.method == 'POST':
         form = RegistrationForm(request.POST)
