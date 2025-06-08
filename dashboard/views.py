@@ -33,6 +33,7 @@ def marketplace(request):
     }
     return render(request, 'marketplace.html', context)
 
+#dashboard views functions
 @login_required(login_url=reverse_lazy('login'))
 def dashboard(request):
     user = request.user
