@@ -1,3 +1,4 @@
+# this is the file used to seed the database
 import os
 import django
 from django.core.files import File
