@@ -52,18 +52,3 @@ def analyze(request):
             context["error"] = f"Error processing prediction: {str(e)}"
     return render(request, 'analyze_page.html', context)
 
-# Optional API view (commented out)
-# def predict_investment(request):
-#     if request.method == "POST":
-#         data = request.POST
-#         try:
-#             logger.info("Processing predict_investment request with data: %s", data)
-#             size = float(data.get("size", 0))
-#             price = float(data.get("price", 0))
-#             area_rate = price / size if size > 0 else 0
-#             
-#             prediction = predict_rent_roi_growth({...})
-#             return JsonResponse(prediction)
-#         except Exception as e:
-#             return JsonResponse({"error": f"Prediction failed: {str(e)}"}, status=400)
-#     return JsonResponse({"error": "Invalid request method"}, status=400)
