@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+
+# models for the database
 class Property(models.Model):
     house_type = models.CharField(max_length=100)
     locality = models.CharField(max_length=100)
